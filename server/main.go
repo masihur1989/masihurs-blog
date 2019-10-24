@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/masihur1989/masihurs-blog/server/common"
 )
 
 func setupRouter() *gin.Engine {
@@ -26,7 +27,9 @@ func setupRouter() *gin.Engine {
 }
 
 func main() {
+	common.ConfigureApp()
 	r := setupRouter()
 	// start and run the servier
 	_ = r.Run(":3000")
+	defer common.CloseDB()
 }
