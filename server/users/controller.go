@@ -108,7 +108,7 @@ func ForgotPasswordController(c *gin.Context) {
 	}
 
 	if payload.Password == payload.NewPassword {
-		l.Error("NO CHANGE IN PASSWORD")
+		l.Error("No Change in Password")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot use the same password for new password!"})
 		return
 	}

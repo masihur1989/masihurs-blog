@@ -151,7 +151,7 @@ This document includes all the api documentations for the users endpoint.
 ```
 ```json
 {
-    "error": "No Change in Password""
+    "error": "Cannot use the same password for new password!"
 }
 ```
 ```json
