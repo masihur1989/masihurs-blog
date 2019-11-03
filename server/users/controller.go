@@ -3,14 +3,16 @@ package users
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"net/http"
 
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/codingmechanics/applogger"
 	"github.com/gin-gonic/gin"
 	"github.com/masihur1989/masihurs-blog/server/common"
 )
+
+var l applogger.Logger
 
 // RegisterRoutes - Register all the routes for users
 func RegisterRoutes(router *gin.RouterGroup) *gin.RouterGroup {
@@ -28,11 +30,12 @@ func RegisterRoutes(router *gin.RouterGroup) *gin.RouterGroup {
 
 // GetAllUsers godoc
 func GetAllUsers(c *gin.Context) {
+	l.Started("GetAllUsers")
 	pagination := common.GetPaginationFromContext(c)
 	um := UserModel{}
 	users, err := um.GetAllUsers(pagination)
 	if err != nil {
-		log.Printf("GetAllUsers: %v\n", err)
+		l.Errorf("GetAllUsers: ", err)
 		if err == common.ErrorQuery || err == common.ErrorScanning {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 			return
@@ -40,12 +43,15 @@ func GetAllUsers(c *gin.Context) {
 	}
 	// success
 	c.JSON(http.StatusOK, gin.H{"users": users})
+	l.Completed("GetAllUsers")
 }
 
 // GetUserByID godoc
 func GetUserByID(c *gin.Context) {
+	l.Started("GetUserByID")
 	ID, err := common.GetIDFromURL(c, "userID")
 	if err != nil {
+		l.Error(common.ErrorIntConverstion.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -53,38 +59,42 @@ func GetUserByID(c *gin.Context) {
 	user, err := um.GetUserByID(ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No user found with the userID: %v", ID)})
+			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No user found with the ID: %v", ID)})
 			return
 		}
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, user)
+	l.Completed("GetUserByID")
 }
 
 // Register godoc
 func Register(c *gin.Context) {
+	l.Started("Register")
 	var user User
 	if err := c.ShouldBindJSON(&user); err != nil {
-		_ = c.Error(err)
-		log.Printf("JSON BINDING ERROR: %v\n", err)
+		l.Error(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	um := UserModel{}
 	err := um.PostUser(user)
 	if err != nil {
+		l.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "success"})
+	l.Completed("Register")
 }
 
-// ForgotPasswordController -
+// ForgotPasswordController godoc
 func ForgotPasswordController(c *gin.Context) {
+	l.Started("ForgotPasswordController")
 	ID, err := common.GetIDFromURL(c, "userID")
 	if err != nil {
-		log.Printf("ERROR PARSING USERID: %v\n", err)
+		l.Errorf("ERROR PARSING USERID: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
@@ -92,12 +102,13 @@ func ForgotPasswordController(c *gin.Context) {
 	var payload ForgotPassword
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		log.Printf("ERROR BINDING PAYLOAD: %v\n", err)
+		l.Errorf("ERROR BINDING PAYLOAD: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	if payload.Password == payload.NewPassword {
+		l.Error("NO CHANGE IN PASSWORD")
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Cannot use the same password for new password!"})
 		return
 	}
@@ -106,9 +117,11 @@ func ForgotPasswordController(c *gin.Context) {
 	err = um.UpdateUserPassword(ID, payload)
 
 	if err == sql.ErrNoRows {
+		l.Errorf("ErrNoRows: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("No user found with the userID: %v", ID)})
 		return
 	} else if err == bcrypt.ErrHashTooShort || err == bcrypt.ErrMismatchedHashAndPassword {
+		l.Errorf("Bcrypt Hashing Error: ", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": fmt.Sprintf("Wrong Password")})
 		return
 	}
@@ -116,30 +129,39 @@ func ForgotPasswordController(c *gin.Context) {
 	response, err := um.GetUserByID(ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
+			l.Errorf("ErrNoRows: ", err)
 			c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No user found with the userID: %v", ID)})
 			return
 		}
+		l.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 	c.JSON(http.StatusOK, response)
+	l.Completed("ForgotPasswordController")
 }
 
 // DeleteUser -
 func DeleteUser(c *gin.Context) {
+	l.Started("DeleteUser")
 	ID, err := common.GetIDFromURL(c, "userID")
 	if err != nil {
+		l.Error(err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	um := UserModel{}
 	err = um.DeleteUser(ID)
 	if err != nil && err == sql.ErrNoRows {
+		l.Errorf("ErrNoRows: ", err)
 		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
 		return
 	} else if err != nil {
+		l.Error(err.Error())
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
+	c.JSON(http.StatusAccepted, nil)
+	l.Completed("DeleteUser")
 }
