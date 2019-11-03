@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/masihur1989/masihurs-blog/server/categories"
 	"github.com/masihur1989/masihurs-blog/server/common"
+	"github.com/masihur1989/masihurs-blog/server/tags"
 	"github.com/masihur1989/masihurs-blog/server/users"
 )
 
@@ -31,6 +32,7 @@ func setupRouter() *gin.Engine {
 		})
 		users.RegisterRoutes(v1)
 		categories.RegisterRoutes(v1)
+		tags.RegisterRoutes(v1)
 	}
 	// return the router
 	return router
