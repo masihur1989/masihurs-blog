@@ -2,7 +2,7 @@ package tags
 
 import "time"
 
-// Category godoc
+// Tag godoc
 type Tag struct {
 	ID        int       `json:"id"`
 	Name      string    `json:"name"`
@@ -11,5 +11,5 @@ type Tag struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
-// CategoryModel godoc
+// TagModel godoc
 type TagModel struct{}
