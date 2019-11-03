@@ -142,7 +142,7 @@ func ForgotPasswordController(c *gin.Context) {
 	l.Completed("ForgotPasswordController")
 }
 
-// DeleteUser -
+// DeleteUser godoc
 func DeleteUser(c *gin.Context) {
 	l.Started("DeleteUser")
 	ID, err := common.GetIDFromURL(c, "userID")
@@ -162,6 +162,6 @@ func DeleteUser(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusAccepted, nil)
+	c.JSON(http.StatusAccepted, gin.H{"message": "deleted"})
 	l.Completed("DeleteUser")
 }

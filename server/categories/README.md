@@ -6,9 +6,9 @@ This document includes all the api documentations for the categories endpoint.
 
 - GET /categories
 - POST /categories
-- GET /categories/:categoriesID
-- DELETE /categories/:categoriesID
-- PUT /categories/:categoriesID
+- GET /categories/:categoryID
+- DELETE /categories/:categoryID
+- PUT /categories/:categoryID
 
 ### GET /categories
 
