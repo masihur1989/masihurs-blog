@@ -113,7 +113,7 @@ This document includes all the api documentations for the categories endpoint.
 }
 ```
 
-### UPDATE /categories/:categoryID
+### PUT /categories/:categoryID
 - Parameters: 
   - categoryID:
     - Integer

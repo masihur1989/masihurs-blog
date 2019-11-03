@@ -113,7 +113,7 @@ This document includes all the api documentations for the tags endpoint.
 }
 ```
 
-### UPDATE /tags/:tagID
+### PUT /tags/:tagID
 - Parameters: 
   - tagID:
     - Integer
