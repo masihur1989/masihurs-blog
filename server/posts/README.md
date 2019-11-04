@@ -385,4 +385,101 @@ This document includes all the api documentations for the posts endpoint.
     "error": ""
 }
 ```
+### GET /posts/:postID/likes
+- Parameters: 
+  - postID:
+    - Integer
+    - Path
 
+#### OK
+1. StatusCode: `200 OK` 
+2. Response: 
+```json
+{
+    "likes": 0
+}
+```
+
+#### Bad Request
+1. StatusCode: `400 Bad Request` 
+2. Response: 
+```json
+{
+    "error": "Invalid id Passed"
+}
+```
+
+#### Not Found
+1. StatusCode: `404 Not Found` 
+2. Response: 
+```json
+{
+    "error": "No post found with the ID: {postID}"
+}
+```
+
+#### Internal Server Error
+1. StatusCode: `500 Internal Server Error` 
+2. Response: 
+```json
+{
+    "error": ""
+}
+```
+
+### POST /posts/:postID/like
+- Parameters: 
+  - postID:
+    - Integer
+    - Path
+- Request Body:
+Like a post
+```json
+{
+    "user_id": 1,
+    "like": true
+}
+```
+Unlike a post
+```json
+{
+    "user_id": 1,
+    "like": false
+}
+```
+
+#### OK
+1. StatusCode: `200 OK` 
+2. Response: 
+```json
+{
+    "message": "success"
+}
+```
+
+#### Bad Request
+1. StatusCode: `400 Bad Request` 
+2. Response: 
+```json
+{
+    "error": "Invalid id Passed"
+}
+```
+
+#### Not Found
+1. StatusCode: `404 Not Found` 
+2. Response: 
+```json
+{
+    "error": "No post found with the ID: {postID}"
+}
+```
+
+#### Internal Server Error
+1. StatusCode: `500 Internal Server Error` 
+2. Response: 
+```json
+{
+    "error": ""
+}
+```

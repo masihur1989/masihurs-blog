@@ -225,3 +225,59 @@ func (pm PostModel) UpdatePostTags(postID int, tagIDs []int) error {
 	return nil
 
 }
+
+// GetPostLikes godoc
+func (pm PostModel) GetPostLikes(ID int) (*PostLikes, error) {
+	l.Started("GetPostLikes")
+	var pl PostLikes
+	db := common.GetDB()
+	q := "SELECT COUNT(*) FROM likes WHERE post_id = ?;"
+	err := db.QueryRow(q, ID).Scan(&pl.Likes)
+	if err != nil {
+		l.Errorf("ErrorScanning: ", err)
+		return nil, common.ErrorScanning
+	}
+	l.Debug("POST LIKES: %v", &pl)
+	l.Completed("GetPostLikes")
+	return &pl, nil
+}
+
+// LikePost godoc
+func (pm PostModel) LikePost(ID int, pl PostLike) error {
+	l.Started("LikePost")
+	db := common.GetDB()
+	tx, err := db.Begin()
+	if err != nil {
+		l.Errorf("TRANSACTION ERROR: ", err)
+		return common.ErrorTransaction
+	}
+	_, err = tx.Exec("INSERT INTO likes(user_id, post_id, created_at, updated_at) VALUES(?,?,NOW(),NOW());", &pl.UserID, ID)
+	if err != nil {
+		l.Errorf("TX EXECUTION ERROR:", err)
+		tx.Rollback()
+		return common.ErrorTransaction
+	}
+	tx.Commit()
+	l.Completed("LikePost")
+	return nil
+}
+
+// DeletePostLike godoc
+func (pm PostModel) DeletePostLike(ID int, pl PostLike) error {
+	l.Started("LikePost")
+	db := common.GetDB()
+	q := `DELETE FROM likes WHERE post_id = ? AND user_id = ?;`
+	result, err := db.Exec(q, ID, pl.UserID)
+	if err != nil {
+		l.Errorf("ErrorQuery: ", err)
+		return common.ErrorQuery
+	}
+	// didn't hit any rows, return a 404
+	deleteCount, err := result.RowsAffected()
+
+	if deleteCount == 0 {
+		return sql.ErrNoRows
+	}
+	l.Completed("LikePost")
+	return nil
+}
