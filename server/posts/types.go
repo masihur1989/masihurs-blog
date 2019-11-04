@@ -25,5 +25,16 @@ type PostTags struct {
 	Tags []int `json:"tags"`
 }
 
+// PostLikes godoc
+type PostLikes struct {
+	Likes int `json:"likes"`
+}
+
+// PostLike godoc
+type PostLike struct {
+	UserID int  `json:"user_id"`
+	Like   bool `json:"like"`
+}
+
 // PostModel godoc
 type PostModel struct{}

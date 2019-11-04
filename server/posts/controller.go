@@ -18,12 +18,14 @@ func RegisterRoutes(router *gin.RouterGroup) *gin.RouterGroup {
 	{
 		apis.GET("", GetAllPosts)
 		apis.GET("/:postID", GetPostByID)
-		apis.PATCH("/:postID/postview", UpdatePostViewByID)
-		apis.GET("/:postID/tags", GetPostTags)
-		apis.POST("/:postID/tags", AddPostTags)
 		apis.PUT("/:postID", UpdatePost)
 		apis.POST("", PostPost)
 		apis.DELETE("/:postID", DeletePost)
+		apis.PATCH("/:postID/postview", UpdatePostViewByID)
+		apis.GET("/:postID/tags", GetPostTags)
+		apis.POST("/:postID/tags", AddPostTags)
+		apis.GET("/:postID/likes", GetPostLikes)
+		apis.POST("/:postID/like", LikePost)
 	}
 
 	return apis
@@ -215,4 +217,57 @@ func AddPostTags(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "success"})
 	l.Completed("AddPostTags")
+}
+
+// GetPostLikes godoc
+func GetPostLikes(c *gin.Context) {
+	l.Started("PostLikes")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	pt, err := pm.GetPostLikes(ID)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, &pt)
+	l.Completed("PostLikes")
+}
+
+// LikePost godoc
+func LikePost(c *gin.Context) {
+	l.Started("LikePost")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var pl PostLike
+	if err := c.ShouldBindJSON(&pl); err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	if pl.Like {
+		err = pm.LikePost(ID, pl)
+		if err != nil {
+			l.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	} else {
+		err = pm.DeletePostLike(ID, pl)
+		if err != nil {
+			l.Error(err.Error())
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "success"})
+	l.Completed("LikePost")
 }
