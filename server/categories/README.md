@@ -2,7 +2,7 @@
 
 This document includes all the api documentations for the categories endpoint. 
 
-## ednpoints 
+## endpoints 
 
 - GET /categories
 - POST /categories
@@ -85,6 +85,13 @@ This document includes all the api documentations for the categories endpoint.
 ```
 
 ### POST /categories
+- Request Body:
+```json
+{
+    "name": "java",
+    "active": true
+}
+```
 
 #### CREATED
 1. StatusCode: `201 Created` 
@@ -118,6 +125,13 @@ This document includes all the api documentations for the categories endpoint.
   - categoryID:
     - Integer
     - Path
+- Request Body:
+```json
+{
+    "name": "java",
+    "active": true
+}
+```
 
 #### OK
 1. StatusCode: `200 OK` 
