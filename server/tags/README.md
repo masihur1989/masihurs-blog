@@ -85,6 +85,13 @@ This document includes all the api documentations for the tags endpoint.
 ```
 
 ### POST /tags
+- Request Body:
+```json
+{
+    "name": "java",
+    "active": true
+}
+```
 
 #### CREATED
 1. StatusCode: `201 Created` 
@@ -118,6 +125,13 @@ This document includes all the api documentations for the tags endpoint.
   - tagID:
     - Integer
     - Path
+- Request Body:
+```json
+{
+    "name": "java",
+    "active": false
+}
+```
 
 #### OK
 1. StatusCode: `200 OK` 

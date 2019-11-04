@@ -95,7 +95,7 @@ func (pm PostModel) UpdatePost(ID int, post Post) error {
 		l.Errorf("TRANSACTION ERROR: ", err)
 		return common.ErrorTransaction
 	}
-	_, err = tx.Exec("UPDATE posts SET title = ?, body = ?, user_id = ?, category_id = ?, post_view = ?, active = ?, updated_at = NOW() WHERE id = ?;", post.Title, post.Body, post.UserID, post.CategoryID, post.PostView, post.Active, ID)
+	_, err = tx.Exec("UPDATE posts SET title = ?, body = ?, user_id = ?, category_id = ?, active = ?, updated_at = NOW() WHERE id = ?;", post.Title, post.Body, post.UserID, post.CategoryID, post.Active, ID)
 	if err != nil {
 		l.Errorf("TX EXECUTION ERROR:", err)
 		tx.Rollback()
@@ -137,7 +137,7 @@ func (pm PostModel) UpdatePostViewByID(postID int, postView PostView) error {
 		l.Errorf("TRANSACTION ERROR: ", err)
 		return common.ErrorTransaction
 	}
-	_, err = tx.Exec("UPDATE posts SET post_view = ? updated_at = NOW() WHERE id = ?;", postView.CurrentView+1, postID)
+	_, err = tx.Exec("UPDATE posts SET post_view = ?, updated_at = NOW() WHERE id = ?;", postView.CurrentView+1, postID)
 	if err != nil {
 		l.Errorf("TX EXECUTION ERROR:", err)
 		tx.Rollback()

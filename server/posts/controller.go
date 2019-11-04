@@ -167,6 +167,6 @@ func UpdatePostViewByID(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
-	c.JSON(http.StatusAccepted, gin.H{"message": "accepted"})
+	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
 	l.Completed("UpdatePostView")
 }

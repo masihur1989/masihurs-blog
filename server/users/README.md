@@ -2,7 +2,7 @@
 
 This document includes all the api documentations for the users endpoint. 
 
-## ednpoints 
+## endpoints 
 
 - GET /users
 - POST /users
