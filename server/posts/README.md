@@ -10,6 +10,8 @@ This document includes all the api documentations for the posts endpoint.
 - DELETE /posts/:postID
 - PUT /posts/:postID
 - PATCH /posts/:postID/postview
+- GET /posts/:postID/tags
+- POST /posts/:postID/tags
 
 ### GET /posts
 
@@ -256,6 +258,104 @@ This document includes all the api documentations for the posts endpoint.
 ```json
 {
     "message": "updated"
+}
+```
+
+#### Bad Request
+1. StatusCode: `400 Bad Request` 
+2. Response: 
+```json
+{
+    "error": "Invalid id Passed"
+}
+```
+
+#### Not Found
+1. StatusCode: `404 Not Found` 
+2. Response: 
+```json
+{
+    "error": "No post found with the ID: {postID}"
+}
+```
+
+#### Internal Server Error
+1. StatusCode: `500 Internal Server Error` 
+2. Response: 
+```json
+{
+    "error": ""
+}
+```
+
+### GET /posts/:postID/tags
+- Parameters: 
+  - postID:
+    - Integer
+    - Path
+
+#### OK
+1. StatusCode: `200 OK` 
+2. Response: 
+```json
+{
+    "tags": [1, 2, 3],
+}
+```
+
+#### Bad Request
+1. StatusCode: `400 Bad Request` 
+2. Response: 
+```json
+{
+    "error": "Invalid id Passed"
+}
+```
+
+#### Not Found
+1. StatusCode: `404 Not Found` 
+2. Response: 
+```json
+{
+    "error": "No post found with the ID: {postID}"
+}
+```
+
+#### Internal Server Error
+1. StatusCode: `500 Internal Server Error` 
+2. Response: 
+```json
+{
+    "error": ""
+}
+```
+
+### POST /posts/:postID/tags
+- Parameters: 
+  - postID:
+    - Integer
+    - Path
+- Request Body:
+```json
+{
+    "tags": [1, 2, 3],
+}
+```
+
+#### OK
+1. StatusCode: `200 OK` 
+2. Response: 
+```json
+{
+    "id": 1,
+    "title": "Java Class",
+    "body": "Java Class Syntext",
+    "user_id": 1,
+    "category_id": 4,
+    "post_view": 0,
+    "active": true,
+    "created_at": "2019-11-04T01:18:29Z",
+    "updated_at": "2019-11-04T01:18:29Z"
 }
 ```
 

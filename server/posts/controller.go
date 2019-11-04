@@ -19,6 +19,8 @@ func RegisterRoutes(router *gin.RouterGroup) *gin.RouterGroup {
 		apis.GET("", GetAllPosts)
 		apis.GET("/:postID", GetPostByID)
 		apis.PATCH("/:postID/postview", UpdatePostViewByID)
+		apis.GET("/:postID/tags", GetPostTags)
+		apis.POST("/:postID/tags", AddPostTags)
 		apis.PUT("/:postID", UpdatePost)
 		apis.POST("", PostPost)
 		apis.DELETE("/:postID", DeletePost)
@@ -169,4 +171,48 @@ func UpdatePostViewByID(c *gin.Context) {
 	}
 	c.JSON(http.StatusAccepted, gin.H{"message": "updated"})
 	l.Completed("UpdatePostView")
+}
+
+// GetPostTags godoc
+func GetPostTags(c *gin.Context) {
+	l.Started("GetPostTags")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	pt, err := pm.GetPostTags(ID)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, &pt)
+	l.Completed("GetPostTags")
+}
+
+// AddPostTags godoc
+func AddPostTags(c *gin.Context) {
+	l.Started("AddPostTags")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var pt PostTags
+	if err := c.ShouldBindJSON(&pt); err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	err = pm.AddPostTags(ID, pt)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "success"})
+	l.Completed("AddPostTags")
 }

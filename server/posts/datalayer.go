@@ -147,3 +147,81 @@ func (pm PostModel) UpdatePostViewByID(postID int, postView PostView) error {
 	l.Completed("UpdatePostViewByID")
 	return nil
 }
+
+// AddPostTags godoc
+func (pm PostModel) AddPostTags(postID int, tagIDs PostTags) error {
+	l.Started("AddPostTags")
+	l.Info("POST TAGS: %v", tagIDs)
+	db := common.GetDB()
+	for _, tag := range tagIDs.Tags {
+		tx, err := db.Begin()
+		if err != nil {
+			l.Errorf("TRANSACTION ERROR: ", err)
+			return common.ErrorTransaction
+		}
+		_, err = tx.Exec("INSERT INTO post_tags(post_id, tag_id, created_at, updated_at) VALUES(?,?,NOW(),NOW());", postID, tag)
+		if err != nil {
+			l.Errorf("TX EXECUTION ERROR:", err)
+			tx.Rollback()
+			return common.ErrorTransaction
+		}
+		tx.Commit()
+	}
+	l.Completed("AddPostTags")
+	return nil
+}
+
+// GetPostTags godoc
+func (pm PostModel) GetPostTags(postID int) (*PostTags, error) {
+	l.Started("GetPostTags")
+	db := common.GetDB()
+	pTags := make([]int, 0)
+	query := "SELECT tag_id FROM post_tags WHERE post_id = ?"
+	l.Info("Query: %s", query)
+	results, err := db.Query(query, postID)
+	l.Info("DB RESULT: %v", results)
+	if err != nil {
+		l.Errorf("ErrorQuery: ", err)
+		return nil, common.ErrorQuery
+	}
+
+	for results.Next() {
+		var tagID int
+		// for each row, scan the result into our tag composite object
+		err = results.Scan(&tagID)
+		if err != nil {
+			l.Errorf("ErrorScanning: ", err)
+			return nil, common.ErrorScanning
+		}
+		pTags = append(pTags, tagID)
+	}
+	l.Debug("POST TAGS: %v", &pTags)
+	l.Completed("GetPostTags")
+	pt := PostTags{pTags}
+	return &pt, nil
+}
+
+// UpdatePostTags godoc
+// TODO not sure about the implementation
+func (pm PostModel) UpdatePostTags(postID int, tagIDs []int) error {
+	l.Started("UpdatePostTags")
+	l.Info("TAG IDs: %v", tagIDs)
+	db := common.GetDB()
+	for _, tag := range tagIDs {
+		tx, err := db.Begin()
+		if err != nil {
+			l.Errorf("TRANSACTION ERROR: ", err)
+			return common.ErrorTransaction
+		}
+		_, err = tx.Exec("INSERT INTO post_tags(post_id, tag_id, created_at, updated_at) VALUES(?,?,NOW(),NOW());", postID, tag)
+		if err != nil {
+			l.Errorf("TX EXECUTION ERROR:", err)
+			tx.Rollback()
+			return common.ErrorTransaction
+		}
+		tx.Commit()
+	}
+	l.Completed("UpdatePostTags")
+	return nil
+
+}

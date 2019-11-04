@@ -20,5 +20,10 @@ type PostView struct {
 	CurrentView int `json:"post_view"`
 }
 
+// PostTags godoc
+type PostTags struct {
+	Tags []int `json:"tags"`
+}
+
 // PostModel godoc
 type PostModel struct{}
