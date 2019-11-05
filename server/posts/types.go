@@ -36,5 +36,19 @@ type PostLike struct {
 	Like   bool `json:"like"`
 }
 
+//PostComment godoc
+type PostComment struct {
+	ID        int       `json:"id"`
+	PostID    int       `json:"post_id"`
+	Guest     bool      `json:"guest"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	UserID    int       `json:"user_id"`
+	Comment   string    `json:"comment"`
+	Active    bool      `json:"active"`
+	CreatedAt time.Time `json:"created_at,omitempty" db:"created_at"`
+	UpdatedAt time.Time `json:"updated_at,omitempty" db:"updated_at"`
+}
+
 // PostModel godoc
 type PostModel struct{}

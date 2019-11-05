@@ -281,3 +281,113 @@ func (pm PostModel) DeletePostLike(ID int, pl PostLike) error {
 	l.Completed("LikePost")
 	return nil
 }
+
+// GetPostComments godoc
+func (pm PostModel) GetPostComments(ID int) (*[]PostComment, error) {
+	l.Started("GetPostComments")
+	db := common.GetDB()
+	pc := make([]PostComment, 0)
+	q := "SELECT * FROM comments WHERE post_id = ?;"
+	l.Info("Query: %s", q)
+	results, err := db.Query(q, ID)
+	l.Info("DB RESULT: %v", results)
+	if err != nil {
+		l.Errorf("ErrorQuery: ", err)
+		return nil, common.ErrorQuery
+	}
+
+	for results.Next() {
+		var post PostComment
+		// for each row, scan the result into our tag composite object
+		err = results.Scan(&post.ID, &post.PostID, &post.Guest, &post.Name, &post.Email, &post.UserID, &post.Comment, &post.Active, &post.CreatedAt, &post.UpdatedAt)
+		if err != nil {
+			l.Errorf("ErrorScanning: ", err)
+			return nil, common.ErrorScanning
+		}
+		pc = append(pc, post)
+	}
+	l.Debug("POST COMMENTS: %v", &pc)
+	l.Completed("GetPostComments")
+	return &pc, nil
+}
+
+// AddComment godoc
+func (pm PostModel) AddComment(ID int, pc PostComment) error {
+	l.Started("AddComment")
+	db := common.GetDB()
+	tx, err := db.Begin()
+	if err != nil {
+		l.Errorf("TRANSACTION ERROR: ", err)
+		return common.ErrorTransaction
+	}
+	_, err = tx.Exec("INSERT INTO comments(post_id, guest, name, email, user_id, comment, active, created_at, updated_at) VALUES(?,?,?,?,?,?,?,NOW(),NOW());", ID, &pc.Guest, &pc.Name, &pc.Email, &pc.UserID, &pc.Comment, &pc.Active)
+	if err != nil {
+		l.Errorf("TX EXECUTION ERROR:", err)
+		tx.Rollback()
+		return common.ErrorTransaction
+	}
+	tx.Commit()
+	l.Completed("AddComment")
+	return nil
+}
+
+// GetPostComment godoc
+// single comment for a post
+func (pm PostModel) GetPostComment(postID, commentID int) (*PostComment, error) {
+	l.Started("GetPostComment")
+	db := common.GetDB()
+	q := "SELECT * FROM comments WHERE post_id = ? AND id = ?"
+	var pc PostComment
+	err := db.QueryRow(q, postID, commentID).Scan(&pc.ID, &pc.PostID, &pc.Guest, &pc.Name, &pc.Email, &pc.UserID, &pc.Comment, &pc.Active, &pc.CreatedAt, &pc.UpdatedAt)
+	switch {
+	case err == sql.ErrNoRows:
+		l.Errorf("ErrNoRows %d", nil, postID)
+		return nil, sql.ErrNoRows
+	case err != nil:
+		l.Errorf("ErrorScanning: ", err)
+		return nil, common.ErrorScanning
+	}
+	l.Debug("POST COMMENT: %v", &pc)
+	l.Completed("GetPostComment")
+	return &pc, nil
+}
+
+// UpdateComment godoc
+func (pm PostModel) UpdateComment(postID, commentID int, pc PostComment) error {
+	l.Started("UpdateComment")
+	db := common.GetDB()
+	tx, err := db.Begin()
+	if err != nil {
+		l.Errorf("TRANSACTION ERROR: ", err)
+		return common.ErrorTransaction
+	}
+	_, err = tx.Exec("UPDATE comments SET guest = ?, name = ?, email = ?, user_id = ?, comment = ?, active = ?, updated_at = NOW();", &pc.Guest, &pc.Name, &pc.Email, &pc.UserID, &pc.Comment, &pc.Active)
+	if err != nil {
+		l.Errorf("TX EXECUTION ERROR:", err)
+		tx.Rollback()
+		return common.ErrorTransaction
+	}
+	tx.Commit()
+	l.Completed("UpdateComment")
+	return nil
+}
+
+// DeleteComment godoc
+func (pm PostModel) DeleteComment(postID, commentID int) error {
+	l.Started("DeletePost")
+	db := common.GetDB()
+	q := "DELETE FROM comments WHERE post_id = ? AND id = ?"
+	result, err := db.Exec(q, postID, commentID)
+	if err != nil {
+		l.Errorf("ErrorQuery: ", err)
+		return common.ErrorQuery
+	}
+	// didn't hit any rows, return a 404
+	deleteCount, err := result.RowsAffected()
+
+	if deleteCount == 0 {
+		return sql.ErrNoRows
+	}
+	l.Completed("DeletePost")
+	return nil
+}

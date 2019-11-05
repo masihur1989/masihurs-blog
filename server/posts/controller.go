@@ -21,11 +21,20 @@ func RegisterRoutes(router *gin.RouterGroup) *gin.RouterGroup {
 		apis.PUT("/:postID", UpdatePost)
 		apis.POST("", PostPost)
 		apis.DELETE("/:postID", DeletePost)
+		// postview endpoint
 		apis.PATCH("/:postID/postview", UpdatePostViewByID)
+		// tags endpoint
 		apis.GET("/:postID/tags", GetPostTags)
 		apis.POST("/:postID/tags", AddPostTags)
+		// like endpoint
 		apis.GET("/:postID/likes", GetPostLikes)
-		apis.POST("/:postID/like", LikePost)
+		apis.POST("/:postID/likes", LikePost)
+		// comment endpoint
+		apis.GET("/:postID/comments", GetAllPostComments)
+		apis.POST("/:postID/comments", CommentPost)
+		apis.PUT("/:postID/comments/:commentID", UpdateComment)
+		apis.GET("/:postID/comments/:commentID", GetPostComment)
+		apis.DELETE("/:postID/comments/:commentID", DeleteComment)
 	}
 
 	return apis
@@ -270,4 +279,124 @@ func LikePost(c *gin.Context) {
 	}
 	c.JSON(http.StatusCreated, gin.H{"message": "success"})
 	l.Completed("LikePost")
+}
+
+// GetAllPostComments godoc
+func GetAllPostComments(c *gin.Context) {
+	l.Started("GetAllPostComments")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	pc, err := pm.GetPostComments(ID)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"post_comments": pc})
+	l.Completed("GetAllPostComments")
+}
+
+// CommentPost godoc
+func CommentPost(c *gin.Context) {
+	l.Started("CommentPost")
+	ID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var pc PostComment
+	if err := c.ShouldBindJSON(&pc); err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	err = pm.AddComment(ID, pc)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "success"})
+	l.Completed("CommentPost")
+}
+
+// UpdateComment godoc
+func UpdateComment(c *gin.Context) {
+	l.Started("UpdateComment")
+	postID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	commentID, err := common.GetIDFromURL(c, "commentID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var pc PostComment
+	if err := c.ShouldBindJSON(&pc); err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	err = pm.UpdateComment(postID, commentID, pc)
+	if err != nil {
+		l.Error(err.Error())
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusCreated, gin.H{"message": "success"})
+	l.Completed("UpdateComment")
+}
+
+// GetPostComment godoc
+func GetPostComment(c *gin.Context) {
+	l.Started("GetPostComment")
+	postID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	commentID, err := common.GetIDFromURL(c, "commentID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	var pm PostModel
+	pc, err := pm.GetPostComment(postID, commentID)
+
+	c.JSON(http.StatusOK, &pc)
+	l.Completed("GetPostComment")
+}
+
+// DeleteComment godoc
+func DeleteComment(c *gin.Context) {
+	l.Started("DeleteComment")
+	postID, err := common.GetIDFromURL(c, "postID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	commentID, err := common.GetIDFromURL(c, "commentID")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	pm := PostModel{}
+	err = pm.DeleteComment(postID, commentID)
+	if err != nil && err == sql.ErrNoRows {
+		c.JSON(http.StatusNotFound, gin.H{"error": fmt.Sprintf("No comment found with IDs.")})
+		return
+	} else if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusAccepted, gin.H{"message": "deleted"})
+	l.Completed("DeleteComment")
 }
