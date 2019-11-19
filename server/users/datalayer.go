@@ -91,6 +91,33 @@ func (um UserModel) PostUser(user User) error {
 	return nil
 }
 
+// PostLogin godoc
+func (um UserModel) PostLogin(ul UserLogin) (*User, error) {
+	l.Started("PostLogin")
+	db := common.GetDB()
+	var user User
+	row := db.QueryRow("SELECT * FROM users WHERE email = ?", ul.Email)
+	l.Info("ROW: %v", row)
+	err := row.Scan(&user.ID, &user.Name, &user.Email, &user.Password, &user.RememberToken, &user.LoginType, &user.Active, &user.CreatedAt, &user.UpdatedAt)
+	switch {
+	case err == sql.ErrNoRows:
+		l.Errorf("ErrNoRows: ", err)
+		return nil, sql.ErrNoRows
+	case err != nil:
+		l.Errorf("ErrorScanning: ", err)
+		return nil, common.ErrorScanning
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(ul.Password))
+	if err != nil {
+		l.Errorf("PASSWORD VALDIATION FAILED: ", err)
+		return nil, common.ErrorPasswordMatching
+	}
+	l.Info("USER: %v", &user)
+	l.Completed("PostLogin")
+	return &user, nil
+}
+
 // UpdateUserPassword -
 func (um UserModel) UpdateUserPassword(userID int, pwd ForgotPassword) error {
 	l.Started("UpdateUserPassword")

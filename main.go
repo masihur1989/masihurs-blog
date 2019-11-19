@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/codingmechanics/applogger"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/masihur1989/masihurs-blog/server/categories"
@@ -19,10 +20,16 @@ func setupRouter() *gin.Engine {
 	// new gin engine
 	// custom gin engine
 	router := gin.New()
+
 	router.Use(l.GinLogger())
 	router.Use(gin.Recovery())
 
-	router.Use(static.Serve("/", static.LocalFile("./views", true)))
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"http://localhost:8080"}
+	// config.AllowOrigins == []string{"http://google.com", "http://facebook.com"}
+	router.Use(cors.New(config))
+
+	router.Use(static.Serve("/", static.LocalFile("./frontend/build/", true)))
 	// setup route group
 	v1 := router.Group("/api/v1")
 	{
@@ -49,7 +56,7 @@ func main() {
 
 	r := setupRouter()
 	// start and run the server
-	_ = r.Run(":3000")
+	_ = r.Run(":8080")
 	// close db connection
 	defer common.CloseDB()
 	// stop logging

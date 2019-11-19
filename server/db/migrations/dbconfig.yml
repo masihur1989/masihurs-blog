@@ -1,0 +1,7 @@
+development:
+  driver: mysql
+  open: user=foo dbname=foo_test
+  datasource: root:root@tcp(localhost:3306)/damn
+
+production:
+  driver: mysql

@@ -2,17 +2,17 @@ package common
 
 import "errors"
 
-// Utils Errors
-
 // ErrorIntConverstion Used in D parsing
 var ErrorIntConverstion = errors.New("Invalid id Passed")
 
-// Hashing Error
+// ErrorJWTStringGeneration jwt error generated
+var ErrorJWTStringGeneration = errors.New("JWT String genration Error")
 
 // ErrorHashing Used in D parsing
 var ErrorHashing = errors.New("Hashing Error")
 
-// DB Errors
+// ErrorPasswordMatching godoc
+var ErrorPasswordMatching = errors.New("Password Mismatch")
 
 // ErrorQuery Query Execution Error
 var ErrorQuery = errors.New("Query Execution Error")

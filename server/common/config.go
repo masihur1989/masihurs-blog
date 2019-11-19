@@ -6,6 +6,8 @@ import (
 	"os"
 	"strings"
 
+	"github.com/codingmechanics/applogger"
+
 	"github.com/joho/godotenv"
 )
 
@@ -15,11 +17,15 @@ var ConfigKeys = []string{
 	"DB_USER",
 	"DB_PASS",
 	"DB_NAME",
+	// auth
+	"JWT_SECRET",
 }
+
+var l applogger.Logger
 
 // ConfigureApp will load environment variables from  .env files and AWS Secrets Manager, panic'ing if any of them fail.
 func ConfigureApp() {
-	log.Print("Attempting to load config from .env file")
+	l.Info("Attempting to load config from .env file")
 
 	if err := setupDotEnv(); err != nil {
 		log.Panicf("Could not load .env file: %e", err)
@@ -45,17 +51,17 @@ func setupDotEnv() error {
 	err := godotenv.Load()
 
 	if err == nil {
-		log.Print("Successfully loaded .env relatively. Finished loading config.")
+		l.Info("Successfully loaded .env relatively. Finished loading config.")
 		return nil
 	}
 
 	// Attempt to load it from the root of the docker container (works in the docker container on production)
 	err = godotenv.Load("/.env")
 	if err != nil {
-		log.Printf("Couldn't load a .env file. The app will rely on environment variables exclusively. %s", err)
+		l.Errorf("Couldn't load a .env file. The app will rely on environment variables exclusively: ", err)
 		return nil
 	}
 
-	log.Print("Successfully loaded /.env. Finished loading config.")
+	l.Info("Successfully loaded /.env. Finished loading config.")
 	return nil
 }

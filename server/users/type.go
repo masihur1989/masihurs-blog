@@ -15,6 +15,12 @@ type User struct {
 	UpdatedAt     time.Time `json:"updated_at,omitempty" db:"updated_at"`
 }
 
+// UserLogin godoc
+type UserLogin struct {
+	Email    string `json:"email" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 // ForgotPassword -
 type ForgotPassword struct {
 	Password    string `json:"password"`
