@@ -1,4 +1,4 @@
-module github.com/masihur1989/masihurs-blog/server
+module github.com/masihur1989/masihurs-blog
 
 go 1.12
 
